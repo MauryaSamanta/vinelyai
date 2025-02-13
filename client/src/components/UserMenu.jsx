@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Box, Avatar, Typography, Button } from "@mui/material";
 import { motion } from "framer-motion";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import PersonPinIcon from '@mui/icons-material/PersonPin';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import { setLogout } from "../state";
 const UserMenu = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const user=useSelector((state)=>state.user);
+  const dispatch=useDispatch();
   return (
     <Box sx={{ position: "relative" }}>
       {/* User Avatar & Name */}
@@ -85,7 +87,7 @@ const UserMenu = () => {
               "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.1)" },
               variant:'contained'
             }}
-            onClick={() => console.log("Logout Clicked")}
+            onClick={() => {dispatch(setLogout())}}
             startIcon={<ExitToAppIcon/>}
           >
             Logout

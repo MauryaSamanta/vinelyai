@@ -6,7 +6,8 @@ const userSchema = new mongoose.Schema(
     lastName: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true },
     password: { type: String, required: true },
-    number_con:{type:String}
+    number_con:{type:String},
+    friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }] 
   },
   { timestamps: true }
 );

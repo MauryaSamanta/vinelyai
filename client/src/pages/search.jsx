@@ -28,6 +28,7 @@ import { ExpandMore, ExpandLess } from "@mui/icons-material";
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { useSelector } from "react-redux"
 import ThinkingText from "../loaders/Thinking"
+import SearchDetailsModal from "../components/SearchDetails"
 const SearchContainer = styled(Box)(({ theme }) => ({
   backgroundColor: "#1a1a1a",
   minHeight: "100vh",
@@ -41,6 +42,7 @@ export default function SearchInterface() {
   const [open,setOpen]=useState(false);
   const [prompt,setprompt]=useState('');
   const [isloading, setloading]=useState(false);
+  const [showinddiag,setshowinddiag]=useState(false);
   const search=async()=>{
     const data={userId:user._id, query:prompt};
     console.log(JSON.stringify(data))
@@ -71,7 +73,8 @@ export default function SearchInterface() {
           style={{
             display:'flex',
             flexDirection:'row',
-            justifyContent:'center'
+            justifyContent:'center',
+          
           }}
         >
           <img src={logo} style={{width:50, height:50, marginBottom:10}}/>
@@ -84,7 +87,9 @@ export default function SearchInterface() {
             autoComplete="off"
             value={prompt}
             sx={{
-              
+              width: "80%", // Reduced width
+    margin: "0 auto", // Centering the TextField
+    display: "flex",
               mb: 3,
               "& .MuiOutlinedInput-root": {
                 color: "white",
@@ -100,6 +105,7 @@ export default function SearchInterface() {
                   borderColor: "#15ab33",
                 },
               },
+            
             }}
             onChange={(e)=>{setprompt(e.target.value)}}
             InputProps={{
@@ -208,6 +214,7 @@ export default function SearchInterface() {
         },
         cursor:'pointer'
       }}
+      onClick={()=>{setshowinddiag(result);}}
     >
       <ListItemText
         primary={
@@ -232,6 +239,7 @@ export default function SearchInterface() {
     </ListItem>
   ))}
 </List>
+<SearchDetailsModal open={showinddiag} onClose={()=>{setshowinddiag(false)}} result={showinddiag}/>
 
           </motion.div>)}
         </Box>

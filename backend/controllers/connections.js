@@ -76,9 +76,15 @@ export const search = async (req, res) => {
 
     // Generate query embedding
     const queryEmbedding = await generateEmbedding(query);
+    //Fetch Users and Friends of users
+    const user = await User.findOne({ userId }).populate("friends");
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const friendIds = user.friends.map(friend => friend);
+    const allowedUsers = [userId, ...friendIds]; // User + Friends' IDs
 
     // Fetch all connections for the given user
-    const connections = await Connection.find({ userId });
+    const connections = await Connection.find({ userId: { $in: allowedUsers } }).populate('userId');
 
     // Compute similarity for each connection
     const scoredConnections = connections.map((conn) => ({
@@ -89,7 +95,7 @@ export const search = async (req, res) => {
     // Sort by similarity (higher is better)
     scoredConnections.sort((a, b) => b.similarity - a.similarity);
     
-    // Return top 5 results
+    // Return top 20 results
     return res.json({ success: true, data: scoredConnections.slice(0, 20) });
   } catch (error) {
     console.error(" Error searching connections:", error);
