@@ -41,21 +41,22 @@ export default function SearchInterface() {
   const [open,setOpen]=useState(false);
   const [prompt,setprompt]=useState('');
   const [isloading, setloading]=useState(false);
-  const search=async()=>{
-    const data={userId:user._id, query:prompt};
-    console.log(JSON.stringify(data))
+  const search = async () => {
+    const query = prompt.trim() === '' ? 'Software Developers from Jadavpur University' : prompt;
+    const data = { userId: user._id, query };
+    console.log(JSON.stringify(data));
     setloading(true);
     try {
-      const response=await fetch('http://localhost:3000/connections/search',{
-        headers:{"Content-Type":"application/json"},
-        method:"POST",
-        body:JSON.stringify(data)
+      const response = await fetch('http://localhost:3000/connections/search', {
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+        body: JSON.stringify(data)
       });
-      const returneddata=await response.json();
+      const returneddata = await response.json();
       setloading(false);
       setSearchResults(returneddata.data);
     } catch (error) {
-      
+      // handle error
     }
   }
   return (

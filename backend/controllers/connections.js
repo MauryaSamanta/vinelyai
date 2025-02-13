@@ -89,7 +89,7 @@ export const search = async (req, res) => {
     // Sort by similarity (higher is better)
     scoredConnections.sort((a, b) => b.similarity - a.similarity);
     
-    // Return top 5 results
+    // Return top 20 results
     return res.json({ success: true, data: scoredConnections.slice(0, 20) });
   } catch (error) {
     console.error(" Error searching connections:", error);
