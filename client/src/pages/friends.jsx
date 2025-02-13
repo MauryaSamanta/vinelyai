@@ -40,9 +40,9 @@ const InviteTextField = styled(TextField)(({ theme }) => ({
 }))
 
 export default function FriendsInterface() {
-  const [currentFriends] = useState([
-    { id: 1, name: "Saptarshi Sinha", avatar: "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg" },
-    { id: 2, name: "Mridul Das", avatar: "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg" },
+  const [currentFriends, setCurrentFriends] = useState([
+    { id: 1, name: "Saptarshi Sinha", avatar: "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=40&w=40" },
+    { id: 2, name: "Mridul Das", avatar: "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=40&w=40" },
   ])
 
   const [suggestedFriends] = useState([
