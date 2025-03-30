@@ -4,10 +4,7 @@ import dotenv from 'dotenv';
 import { generateEmbedding } from "../controllers/connections.js";
 
 dotenv.config();
-const config = {
-  apiKey: "AIzaSyCgeRuLc25ZdFyJh3I2jmaBZx6RAMt29iY",
-  searchEngineId: "57ec0f96016ac4253"
-};
+
 
 async function getLinkedinSnippet(connection) {
     const { firstName, lastName, position, company } = connection;
