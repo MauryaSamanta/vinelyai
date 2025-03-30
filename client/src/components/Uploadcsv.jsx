@@ -74,7 +74,7 @@ export const ConnectionsUploadModal = ({ open, onClose }) => {
             <Box 
               sx={{
                 width: 500,
-                bgcolor: 'rgba(20, 20, 30, 0.9)',
+                background: "linear-gradient(135deg, #101010, #222222)",
                 color: 'white',
                 borderRadius: 3,
                 p: 4,

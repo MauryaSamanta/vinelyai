@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, BrowserRouter } from 'react-router-dom';
 
 import { createMuiTheme, createTheme, CssBaseline, ThemeProvider, useMediaQuery } from '@mui/material';
@@ -11,6 +11,10 @@ import AuthPage from './pages/authPage';
 import SearchInterface from './pages/search';
 import FriendsInterface from './pages/friends';
 import ConnectionsInterface from './pages/connections';
+import AuthCallback from './components/AuthCallback';
+import PageWithWebBackground from './pages/Sample';
+import GroupsPage from './pages/Groups';
+import Waves from './components/WavesBack';
 
 const App = () => {
   const theme = createTheme({
@@ -29,22 +33,28 @@ const App = () => {
           }
         }
       }
-    }
+    },
+    typography: {
+      fontFamily: "'Cabin'",
+    },
   });
   const isSmallScreen = useMediaQuery('(max-width: 768px)'); // Media query for phones and tablets
   const user=useSelector((state)=>state.user);
+
   return (
     <BrowserRouter>
     <ThemeProvider theme={theme}>
      
      <CssBaseline />
-
+ 
       <Routes>
-      <Route path="/" element={!user?<AuthPage/>:<SearchInterface/>} />
-      <Route path="/search" element={<SearchInterface />} />
-      <Route path="/friends" element={<FriendsInterface />} />
-      <Route path="/connections" element={<ConnectionsInterface />} />
-
+      <Route path="/" element={!user?.firstName?<AuthPage/>:<SearchInterface/>} />
+      <Route path="/search" element={user?<SearchInterface />:<AuthPage/>} />
+      <Route path="/friends" element={user?<FriendsInterface />:<AuthPage/>} />
+      <Route path="/connections" element={user?<ConnectionsInterface />:<AuthPage/>} />
+      <Route path="/groups" element={user?<GroupsPage/>:<AuthPage/>}/>
+      <Route path="/callback" element={<AuthCallback/>} />
+      <Route path="/sample" element={<PageWithWebBackground/>} />
       </Routes>
       </ThemeProvider>
   </BrowserRouter>

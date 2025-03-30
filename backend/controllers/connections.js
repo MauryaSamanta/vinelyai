@@ -5,6 +5,9 @@ import { Readable } from 'stream';
 import OpenAI from "openai";
 import Connection from '../models/Connections.js';
 import User from '../models/User.js';
+import dotenv from 'dotenv';
+import Group from '../models/Groups.js';
+dotenv.config();
 
 const openai = new OpenAI();
 // Controller function to handle CSV upload and parse data
@@ -68,24 +71,50 @@ function cosineSimilarity(vecA, vecB) {
 // 📌 Search Controller
 export const search = async (req, res) => {
   try {
-    const { userId, query } = req.body;
-    
+    const { userId, query, myconn, friendsall, groups } = req.body;
+     
     if (!userId || !query) {
       return res.status(400).json({ error: "userId and query are required" });
     }
 
     // Generate query embedding
     const queryEmbedding = await generateEmbedding(query);
+
+    const { filters } = await extractFiltersAndTraits(query);
+    res.write(JSON.stringify({  filters }) + "\n");
     //Fetch Users and Friends of users
-    const user = await User.findOne({ userId }).populate("friends");
+     const user = await User.findById( userId ).populate("friends");
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    const friendIds = user.friends.map(friend => friend);
-    const allowedUsers = [userId, ...friendIds]; // User + Friends' IDs
+    const friendIds = user.friends.map(friend => friend._id);
+    let allowedUsers=[]
+    if(myconn)
+      allowedUsers=[user._id];
+    if(friendsall)
+      allowedUsers.push(...friendIds);
+    if(groups?.length>0){
+      const groupData = await Group.find({ _id: { $in: groups } }, "members");
 
+      let allMemberIds = groupData.flatMap(group => group.members);
+  
+      allMemberIds = allMemberIds.filter(memberId =>  !allowedUsers.includes(memberId.toString()));
+      allowedUsers.push(...allMemberIds);
+    }
+    //const allowedUsers = [user._id, ...friendIds]; // User + Friends' IDs
+    
     // Fetch all connections for the given user
-    const connections = await Connection.find({ userId: { $in: allowedUsers } }).populate('userId');
+    let connections = await Connection.find({ userId: { $in: allowedUsers } }).populate('userId');
 
+// Filter out duplicates based on firstName and lastName
+const seenNames = new Set();
+connections = connections.filter(connection => {
+  const fullName = `${connection.firstName} ${connection.lastName}`;
+  if (seenNames.has(fullName)) {
+    return false; // Skip duplicate
+  }
+  seenNames.add(fullName);
+  return true; // Keep unique
+});
     // Compute similarity for each connection
     const scoredConnections = connections.map((conn) => ({
       ...conn._doc, // Spread MongoDB document
@@ -95,20 +124,88 @@ export const search = async (req, res) => {
     // Sort by similarity (higher is better)
     scoredConnections.sort((a, b) => b.similarity - a.similarity);
     
-    // Return top 20 results
-    return res.json({ success: true, data: scoredConnections.slice(0, 20) });
+    // Return top 30 results
+    res.write(JSON.stringify({ success: true, data: scoredConnections.slice(0, 30) }) + "\n");
+
   } catch (error) {
     console.error(" Error searching connections:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
-async function generateEmbedding(text) {
+const extractFiltersAndTraits = async (query) => {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4-turbo",
+      messages: [
+        {
+          role: "system",
+          content: "Extract filters (education, workplace, location, etc(just show the filter which is there and present in a simple comma seperated way)) and generate a 2-3 possible summaries (2-3 word samples of the person the prompt is looking for) from the user's query. Return JSON of {filters:[], summaries:[]}.",
+        },
+        {
+          role: "user",
+          content: `Query: "${query}"`,
+        },
+      ],
+      
+    });
+
+    const extractedData = JSON.parse(response.choices[0].message.content);
+    console.log(extractedData);
+    return {
+      filters: extractedData || {},
+      //traits: extractedData || [],
+    };
+  } catch (error) {
+    console.error("Error extracting filters/traits:", error);
+    return { filters: {}, traits: [] };
+  }
+};
+export async function generateEmbedding(text) {
   const response = await openai.embeddings.create({
     model: "text-embedding-3-small",
     input: text,
   });
   return response.data[0].embedding; // Returns a vector
 }
+
+
+export const getmessages = async (req, res) => {
+  try {
+    const { mydetails, persondetails, messageType } = req.body;
+
+    if (!mydetails || !persondetails || !messageType) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    // Define the prompt for OpenAI
+    const prompt = `
+      Generate a friendly, engaging, and professional ice-breaker message based on the following details:
+      - **Sender**: ${mydetails.firstName}, ${mydetails.lastName}.
+      - **Receiver**: ${persondetails.firstName},${persondetails.lastName}, ${persondetails.position}, from ${persondetails.company}.
+      - **Context**: The sender wants to connect for getting "${messageType}" purposes.
+
+      Make sure the message is warm, relevant, and encourages further conversation. Send back just the message and nothing more before and after it.
+    `;
+
+    // Call OpenAI API to generate the message
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 100,
+    });
+
+    const generatedMessage = response.choices[0]?.message?.content?.trim();
+
+    if (!generatedMessage) {
+      return res.status(500).json({ error: "Failed to generate message" });
+    }
+
+    return res.status(200).json({ message: generatedMessage });
+  } catch (error) {
+    console.error("Error generating message:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 
 export const deleteAllConnections = async (req, res) => {

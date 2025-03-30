@@ -4,17 +4,20 @@ import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import PersonPinIcon from '@mui/icons-material/PersonPin';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { setLogout } from "../state";
 const UserMenu = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const user=useSelector((state)=>state.user);
   const dispatch=useDispatch();
+  //console.log(user.avatar);
   return (
     <Box sx={{ position: "relative" }}>
       {/* User Avatar & Name */}
       <Button
         sx={{
           position: "absolute",
+          width:200,
           bottom: 10,
           //left: 16,
           display: "flex",
@@ -33,12 +36,12 @@ const UserMenu = () => {
         onClick={() => setMenuOpen(!menuOpen)}
       >
         <Avatar
-          alt={user.firstName}
-          src="https://via.placeholder.com/40" // Replace with the actual avatar URL
+          //alt={user.firstName}
+          src={user.avatar} // Replace with the actual avatar URL
           sx={{ width: 40, height: 40 }}
         />
-        <Typography variant="body2" sx={{ whiteSpace: "nowrap" }}>
-          {user.firstName} {user.lastName}
+        <Typography variant="body2" sx={{ whiteSpace: "nowrap", fontSize:17 }}>
+          {user.firstName} {user.lastName} 
         </Typography>
       </Button>
 
@@ -51,8 +54,8 @@ const UserMenu = () => {
           transition={{ type: "spring", stiffness: 120, damping: 15 }}
           style={{
             position: "absolute",
-            bottom: 60,
-            left: 10,
+            bottom: 70,
+            //left: 10,
             backgroundColor: "black",
             borderRadius: "10px",
             padding: "10px",
@@ -68,6 +71,7 @@ const UserMenu = () => {
               fontWeight: "bold",
               backgroundColor: "transparent",
               borderRadius: "10px",
+              justifyContent:'flex-start',
               "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.1)" },
               variant:'contained'
             }}
@@ -84,6 +88,24 @@ const UserMenu = () => {
               fontWeight: "bold",
               backgroundColor: "transparent",
               borderRadius: "10px",
+              justifyContent:'flex-start',
+              "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.1)" },
+              variant:'contained'
+            }}
+            onClick={() => console.log("Profile Clicked")}
+            startIcon={<SettingsIcon/>}
+          >
+            Settings
+          </Button>
+          <Button
+            fullWidth
+            sx={{
+              color: "white",
+              textTransform: "none",
+              fontWeight: "bold",
+              backgroundColor: "transparent",
+              borderRadius: "10px",
+              justifyContent:'flex-start',
               "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.1)" },
               variant:'contained'
             }}

@@ -6,7 +6,7 @@ const ConnectionSchema = new mongoose.Schema({
   company: { type: String  },
   position: { type: String },
   url:{type:String},
-  embedding: { type: [Number], required: true}, // Add index for vector search
+  embedding: { type: [Number], required: true}, 
 });
 
 const Connection = mongoose.model("Connection", ConnectionSchema);

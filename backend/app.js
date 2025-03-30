@@ -5,6 +5,7 @@ import bodyParser from 'body-parser';
 import dotenv from "dotenv";
 import userRoutes from "./routes/user.js";
 import connRoutes from "./routes/connections.js";
+import groupRoutes from "./routes/groups.js";
 const app = express();
 
 dotenv.config();
@@ -20,6 +21,7 @@ connectDB();//connecting to db
 
 app.use('/user',userRoutes);
 app.use('/connections',connRoutes);
+app.use('/groups', groupRoutes);
 // Start the server
 app.listen(process.env.PORT, () => {
   console.log(`Server running at http://localhost:${process.env.PORT}`);

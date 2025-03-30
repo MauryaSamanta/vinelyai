@@ -14,8 +14,10 @@ import {
 import Google from '@mui/icons-material/Google';
 import logo from "../assets/comet.png"
 import {useDispatch} from 'react-redux';
-import { setLogin } from '../state';
+import { setLogin, setLogout } from '../state';
 import {useNavigate} from 'react-router-dom';
+import WebBackground from '../components/WebBackground';
+import Waves from '../components/WavesBack';
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -27,231 +29,175 @@ const AuthPage = () => {
   const [email,setemail]=useState('');
   const dispatch=useDispatch();
   const navigate=useNavigate();
-  const handleSubmit = async(e) => {
-    e.preventDefault();
-    setIsLoading(true);
+
+  const googleauth=async()=>{
     try {
-      if(isLogin){
-        const data={email:email, password:pass};
-        console.log(data);
-        const response=await fetch('http://localhost:3000/user/login',{
-          headers:{"Content-Type":"application/json"},
-          body:JSON.stringify(data),
-          method:'POST'
-        });
-        const returneddata=await response.json();
-        setIsLoading(false);
-        dispatch(setLogin({
-          user:returneddata.user,
-          token:returneddata.token
-        }));
-        navigate('/search');
-      }
-      else
-      {
-        const data={firstName:first, lastName:last,email:email, password:pass};
-        const response=await fetch('http://localhost:3000/user/signup',{
-          headers:{"Content-Type":"application/json"},
-          body:JSON.stringify(data),
-          method:'POST'
-        });
-        const returneddata=await response.json();
-        setIsLoading(false);
-        dispatch(setLogin({
-          user:returneddata.user,
-          token:returneddata.token
-        }));
-        navigate('/search');
-      }
+      const response = await fetch('http://localhost:3000/user/auth/google',{
+        method:"GET",
+        
+      });
+      const returneddata=await response.json();
+      window.location.href = returneddata.url;
     } catch (error) {
-      console.log(error);
+      console.error('Failed to get Google auth URL:', error);
     }
-  };
+  }
+
   return (
     <Box 
       sx={{
         display: 'flex', 
         justifyContent: 'center', 
         alignItems: 'center', 
+        flexDirection:'column',
         height: '100vh', 
         backgroundColor: 'black',
+        position: "relative", 
         p: isMobile ? 2 : 0
       }}
     >
+       <Waves
+  lineColor="#fff"
+  backgroundColor="rgb(0, 0, 0)"
+  waveSpeedX={0.01}
+  waveSpeedY={0.01}
+  waveAmpX={40}
+  waveAmpY={20}
+  friction={0.9}
+  tension={0.01}
+  maxCursorMove={120}
+  xGap={20}
+  yGap={36}
+/>
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
         style={{ width: '100%', maxWidth: 400 }}
       >
+        
         <Card 
           sx={{ 
             width: '100%', 
             p: isMobile ? 2 : 4, 
             borderRadius: 3, 
             position: 'relative', 
-            overflow: 'hidden' 
+            overflow: 'hidden',
+            
           }}
         >
+          <Box sx={{display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:2}}>
+            <Box sx={{display:'flex', flexDirection:'row', gap:2, alignItems:'center', justifyContent:'center'}}>
           {/* Logo Placeholder */}
           <img 
             style={{ 
-              position: 'absolute', 
-              top: 16, 
-              left: 16, 
+              
               width: 40, 
               height: 40, 
               borderRadius: 2 
             }} 
             src={logo}
           />
+          <Typography sx={{fontSize:35}}>SearchUp.ai</Typography>
+          </Box>
+          <Typography sx={{fontSize:25}}>The People Search Engine</Typography>
+          </Box>
+          <form>
+          <Button
+      fullWidth
+      variant="contained"
+      startIcon={<Google />}
+      onClick={googleauth}
+      sx={{
+        mb: 1,
+        mt: 3,
+        background: "linear-gradient(135deg, #34A853, #0F9D58)", // Sexy Google green gradient
+        color: "#fff", // White text for contrast
+        fontWeight: "bold",
+        textTransform: "none",
+        borderRadius: "10px",
+        padding: "8px 15px",
+        fontSize: "16px",
+        boxShadow: "0px 4px 15px rgba(15, 157, 88, 0.4)", // Soft green glow
+        transition: "all 0.3s ease-in-out",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        position: "relative",
+        overflow: "hidden",
+        "&:hover": {
+          background: "linear-gradient(135deg, #0F9D58, #34A853)", // Reverse gradient on hover
+          boxShadow: "0px 6px 18px rgba(15, 157, 88, 0.6)", // Stronger glow
+        },
+        "&:active": {
+          transform: "scale(0.96)", // Click effect
+        },
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          background:
+            "radial-gradient(circle at center, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 80%)",
+          opacity: 0,
+          transition: "opacity 0.4s ease-in-out",
+        },
+        "&:hover::before": {
+          opacity: 1, // Subtle glossy effect on hover
+        },
+      }}
+    >
+      Continue with Google
+    </Button>
 
-          <form onSubmit={handleSubmit}>
-            <Button 
-              fullWidth 
-              variant="outlined" 
-              startIcon={<Google />}
-              sx={{ mb: 3, mt: 7 }}
-            >
-              Continue with Google
-            </Button>
-
-            <Divider sx={{ my: 2 }}>or</Divider>
-
-            <AnimatePresence mode="wait">
-              {isLogin ? (
-                <motion.div
-                  key="login"
-                  initial={{ opacity: 0, x: -50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 50 }}
-                >
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body1" sx={{ mb: 1, fontWeight: 600 }}>Email</Typography>
-                    <TextField 
-                      fullWidth 
-                      placeholder="Enter your email" 
-                      variant="outlined" 
-                      sx={{ mb: 2 }} 
-                      onChange={(e)=>{setemail(e.target.value)}}
-                    />
-                  </Box>
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body1" sx={{ mb: 1, fontWeight: 600 }}>Password</Typography>
-                    <TextField 
-                      fullWidth 
-                      placeholder="Enter your password" 
-                      type="password" 
-                      variant="outlined"
-                      onChange={(e)=>{setpass(e.target.value)}} 
-                    />
-                  </Box>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="signup"
-                  initial={{ opacity: 0, x: 50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -50 }}
-                >
-                  <Box sx={{ 
-                    display: 'flex', 
-                    flexDirection: isMobile ? 'column' : 'row', 
-                    gap: 2, 
-                    mb: 2 
-                  }}>
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="body1" sx={{ mb: 1, fontWeight: 600 }}>First Name</Typography>
-                      <TextField 
-                        fullWidth 
-                        placeholder="First name" 
-                        variant="outlined" 
-                        onChange={(e)=>{setfirst(e.target.value)}} 
-                      />
-                    </Box>
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="body1" sx={{ mb: 1, fontWeight: 600 }}>Last Name</Typography>
-                      <TextField 
-                        fullWidth 
-                        placeholder="Last name" 
-                        variant="outlined" 
-                        onChange={(e)=>{setlast(e.target.value)}} 
-                      />
-                    </Box>
-                  </Box>
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body1" sx={{ mb: 1, fontWeight: 600 }}>Email</Typography>
-                    <TextField 
-                      fullWidth 
-                      placeholder="Enter your email" 
-                      variant="outlined" 
-                      sx={{ mb: 2 }}
-                      onChange={(e)=>{setemail(e.target.value)}}  
-                    />
-                  </Box>
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body1" sx={{ mb: 1, fontWeight: 600 }}>Password</Typography>
-                    <TextField 
-                      fullWidth 
-                      placeholder="Create a strong password" 
-                      type="password" 
-                      variant="outlined" 
-                      onChange={(e)=>{setpass(e.target.value)}} 
-                    />
-                  </Box>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <Button 
-              fullWidth 
-              variant="contained" 
-              type="submit" 
-              disabled={isLoading}
-              sx={{ 
-                mb: 2, 
-                position: 'relative', 
-                backgroundColor:'#635acc',
-                py: 1.5
-              }}
-            >
-              {isLoading ? (
-                <CircularProgress 
-                  size={24} 
-                  sx={{ position: 'absolute', color: 'white' }} 
-                />
-              ) : (
-                isLogin ? 'Login' : 'Signup'
-              )}
-            </Button>
-
-            <Box sx={{ textAlign: 'center' }}>
-              {isLogin ? (
-                <Typography variant="body2">
-                  Don't have an account yet? 
-                  <Button 
-                    onClick={() => setIsLogin(false)} 
-                    sx={{ ml: 1 }}
-                  >
-                    Signup
-                  </Button>
-                </Typography>
-              ) : (
-                <Typography variant="body2">
-                  Already have an account? 
-                  <Button 
-                    onClick={() => setIsLogin(true)} 
-                    sx={{ ml: 1 }}
-                  >
-                    Login
-                  </Button>
-                </Typography>
-              )}
-            </Box>
           </form>
         </Card>
       </motion.div>
-    </Box>
+      <Typography 
+  sx={{
+    position: "absolute", 
+    bottom: 45, 
+    fontSize: 15, 
+    color: "white", 
+    //cursor: "pointer",
+
+    fontWeight: 500,
+    letterSpacing: "0.5px",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "4px",
+  }}
+>
+  a
+  <a 
+    href="https://www.linkedin.com/in/maurya-samanta-262329287/" 
+    target="_blank"
+    rel="noopener noreferrer"
+    style={{
+      color: "white",
+      textDecoration: "none",
+      borderBottom: "2px dashed rgba(255, 255, 255, 0.6)",
+      transition: "all 0.3s ease-in-out",
+      paddingBottom: "2px",
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.color = "#34A853"; // Green hover effect
+      e.currentTarget.style.borderBottom = "2px solid #34A853"; // Solid green underline
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.color = "white"; 
+      e.currentTarget.style.borderBottom = "2px dashed rgba(255, 255, 255, 0.6)";
+    }}
+  >
+    Maurya Samanta
+  </a>
+  product
+</Typography>
+
+</Box>
   );
 };
 

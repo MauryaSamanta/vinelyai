@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   Box,
   Typography,
@@ -40,19 +40,28 @@ const InviteTextField = styled(TextField)(({ theme }) => ({
 }))
 
 export default function FriendsInterface() {
-  const [currentFriends, setCurrentFriends] = useState([
-    { id: 1, name: "Saptarshi Sinha", avatar: "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=40&w=40" },
-    { id: 2, name: "Mridul Das", avatar: "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=40&w=40" },
-  ])
-
-  const [suggestedFriends] = useState([
-    { id: 3, name: "Michael Schumacher", avatar: "https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg" },
-    { id: 4, name: "Nasrin", avatar: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg" },
-    { id: 5, name: "Jaswinder Singh", avatar: "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg" },
-  ])
+  const [suggestedFriends, setsuggestedFriends] = useState([])
   const dispatch=useDispatch();
   const user=useSelector((state)=>state.user);
   const token=useSelector((state)=>state.token);
+  const [currentFriends, setCurrentFriends] = useState(user.friends)
+  useEffect(()=>{
+    const getsuggests=async()=>{
+      const data={userid:user._id};
+      try {
+        const response=await fetch('http://localhost:3000/user/getsuggest',{
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify(data),
+          method:"POST"
+        });
+        const returneddata=await response.json();
+        setsuggestedFriends(returneddata);
+      } catch (error) {
+        
+      }
+    }
+    getsuggests();
+  },[])
   const addfriend=async(friend)=>{
     const data={userid:user._id, friendid:friend._id};
     try {
@@ -62,20 +71,25 @@ export default function FriendsInterface() {
         body:JSON.stringify(data)
       });
       const returneddata=await response.json();
+
       dispatch(setLogin({
-              user:returneddata.user,
-              token:returneddata.token
+              user:returneddata,
+              token:token
             }));
+            setsuggestedFriends((prev) =>
+              prev.filter((suggested) => suggested._id !== friend._id)
+            );
+            setCurrentFriends((prev) => [...prev, friend]);
     } catch (error) {
       
     }
   }
 
   return (
-    <Box sx={{ display: "flex", height: "100%", backgroundColor: "#121212", p: 3 }}>
+    <Box sx={{ display: "flex", minHeight: "100vh", backgroundColor: "#121212", p: 3 }}>
       <Navbar />
       <Box sx={{ flexGrow: 1, maxWidth: "70%", margin: "0 auto", p: 3, color: "white" }}>
-        <Typography variant="h5" sx={{ mb: 1, fontSize: 40 }}>
+        <Typography variant="h3" sx={{ mb: 1 }}>
           Friends
         </Typography>
         <Typography variant="body2" sx={{ mb: 3, color: "rgba(255,255,255,0.7)" }}>
@@ -99,7 +113,7 @@ export default function FriendsInterface() {
 
         <Typography variant="h6" sx={{ mt: 4, mb: 2 }}>Current Friends</Typography>
         <Grid container spacing={2}>
-          {currentFriends.map((friend) => (
+          {currentFriends?.map((friend) => (
             <Grid item xs={12} sm={4} key={friend.id}>
               <Paper
                 sx={{
@@ -109,10 +123,12 @@ export default function FriendsInterface() {
                   backgroundColor: "rgba(255,255,255,0.1)",
                   borderRadius: 1,
                   "&:hover": { backgroundColor: "rgba(255,255,255,0.2)" },
+                  cursor:'pointer'
                 }}
               >
-                <Avatar src={friend.avatar} sx={{ mr: 2 }} />
-                <Typography sx={{color:'white'}}>{friend.name}</Typography>
+                <Avatar src={friend.avatar || 'https://img.freepik.com/free-vector/smiling-young-man-illustration_1308-173524.jpg?ga=GA1.1.146268314.1723732636&semt=ais_hybrid'} 
+                sx={{ mr: 2 }} />
+                <Typography sx={{color:'white'}}>{friend.firstName} {friend.lastName}</Typography>
               </Paper>
             </Grid>
           ))}
@@ -120,10 +136,11 @@ export default function FriendsInterface() {
 
         <Typography variant="h6" sx={{ mt: 4, mb: 2 }}>Suggested Friends</Typography>
         <Grid container spacing={2}>
-          {suggestedFriends.map((friend) => (
-            <Grid item xs={6} sm={4} md={2} key={friend.id}>
-              <Card sx={{ backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 2, height: 320 }}>
-  <img src={friend.avatar} style={{ width: "100%", height: 200 }} />
+          {suggestedFriends?.map((friend) => (
+            <Grid item xs={6} sm={4} md={1} key={friend._id}>
+              <Card sx={{ backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 2, height: 320, width:200 }}>
+ { <img src={friend.avatar || 'https://img.freepik.com/free-vector/smiling-young-man-illustration_1308-173524.jpg?ga=GA1.1.146268314.1723732636&semt=ais_hybrid'} 
+    style={{ width: "100%", height: 200 }} />}
   <CardContent>
     <Typography
       sx={{
@@ -133,9 +150,10 @@ export default function FriendsInterface() {
         textOverflow: "ellipsis",
         maxWidth: "100%",
         fontWeight: "bold",
+        fontSize:"20px"
       }}
     >
-      {friend.name.length > 8 ? friend.name.substring(0, 14) + "..." : friend.name}
+       {friend.firstName} {friend.lastName.length > 8 ? friend.lastName.substring(0, 14) + "..." : friend.lastName}
     </Typography>
   </CardContent>
   <CardActions sx={{ justifyContent: "center" }}>
@@ -154,6 +172,7 @@ export default function FriendsInterface() {
     boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.3)",
   }}
   startIcon={<PersonAddIcon sx={{ color: "#b3ffcc" }} />} // Matching icon color
+  onClick={()=>{addfriend(friend)}}
 >
   Add Friend
 </Button>

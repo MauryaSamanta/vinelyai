@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar";
 import { useState } from "react";
 import { ConnectionsUploadModal } from "../components/Uploadcsv";
 import { useSelector } from "react-redux";
+import LinkedInCSVModal from "../components/LinkedInHelpModal";
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   backgroundColor: "rgba(255, 255, 255, 0.1)",
@@ -58,6 +59,7 @@ const ConnectionCard = ({ icon: Icon, title, color }) => {
 
 export default function ConnectionsInterface() {
   const [openlicon,setopenlicon]=useState(false);
+  const [opendropdown,setopendropdown]=useState(false);
   const user=useSelector((state)=>state.user);
   return (
     <Box
@@ -71,7 +73,7 @@ export default function ConnectionsInterface() {
     >
       <Navbar />
       <Box sx={{ flexGrow: 1, p: 3, pt: 7, margin: "0 auto", maxWidth: '70%' }}>
-        <Typography variant="h5" sx={{ mb: 1, fontSize:30 }}>
+        <Typography variant="h3" sx={{ mb: 1}}>
           Connections
         </Typography>
         <Typography
@@ -145,7 +147,8 @@ export default function ConnectionsInterface() {
 )}
 
     </Box>
-    <ConnectionsUploadModal open={openlicon} onClose={()=>{setopenlicon(false)}}/>
+    <LinkedInCSVModal open={openlicon} onClose={()=>{setopenlicon(false)}} onNext={()=>{setopenlicon(false); setopendropdown(true)}}/>
+    <ConnectionsUploadModal open={opendropdown} onClose={()=>{setopendropdown(false)}}/>
   </StyledPaper>
           {/* <ConnectionCard
             icon={LinkedIn}
